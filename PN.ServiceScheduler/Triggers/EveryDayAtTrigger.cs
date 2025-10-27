@@ -6,11 +6,13 @@ namespace PN.ServiceScheduler.Triggers
     {
         private DateTime? _nextRun = null;
 
-        private readonly IReadOnlyList<TimeOnly> _timeUtc;
+        private readonly IReadOnlyList<TimeOnly> _time;
+        private readonly TimeZoneInfo _timeZone;
 
-        public EveryDayAtTrigger(IEnumerable<TimeOnly> timeUtc)
+        public EveryDayAtTrigger(IEnumerable<TimeOnly> time, TimeZoneInfo timeZone)
         {
-            _timeUtc = timeUtc.OrderBy(t => t).Distinct().ToList();
+            _time = time.OrderBy(t => t).Distinct().ToList();
+            _timeZone = timeZone;
             _nextRun = GetNext(DateTime.UtcNow);
         }
 
@@ -31,24 +33,29 @@ namespace PN.ServiceScheduler.Triggers
 
         private DateTime? GetNext(DateTime utcNow)
         {
-            if (_timeUtc.Count == 0) return null;
+            if (_time.Count == 0) return null;
 
-            TimeOnly now = TimeOnly.FromDateTime(utcNow);
+            DateTimeOffset now = TimeZoneInfo.ConvertTime(new DateTimeOffset(utcNow, TimeSpan.Zero), _timeZone);
+            TimeOnly nowTime =  TimeOnly.FromDateTime(now.DateTime);
             TimeOnly? nextTime = null;
 
-            foreach (var time in _timeUtc)
+            foreach (var time in _time)
             {
-                if(now < time)
+                if(nowTime < time)
                 {
                     nextTime = time;
                     break;
                 }
             }
 
+            var next = now.Add(-now.TimeOfDay);
+
             if (nextTime.HasValue)
-                return utcNow.Date.Add(nextTime.Value.ToTimeSpan());
+                next = next.Add(nextTime.Value.ToTimeSpan());
             else
-                return utcNow.Date.AddDays(1).Add(_timeUtc[0].ToTimeSpan());
+                next = next.AddDays(1).Add(_time[0].ToTimeSpan());
+            
+            return next.UtcDateTime;
         }
     }
 }

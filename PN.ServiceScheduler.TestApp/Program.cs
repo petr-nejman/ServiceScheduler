@@ -29,10 +29,12 @@ namespace PN.ServiceScheduler.TestApp
                 builder.Services.AddServiceScheduler(conf =>
                 {
                     conf.AddScopedJob<ScopedService>("Scoped task").Every(TimeSpan.FromSeconds(10));
-                    conf.AddSingletonJob<LongRunningService>("Long task at time").EveryDayAt(new List<TimeOnly>() {
-                        TimeOnly.FromDateTime(DateTime.UtcNow.AddSeconds(10)),
-                        TimeOnly.FromDateTime(DateTime.UtcNow.AddSeconds(20))
-                    });
+                    conf.AddSingletonJob<LongRunningService>("Long task at time").EveryDayAt(
+                        [
+                            TimeOnly.FromDateTime(DateTime.Now.AddSeconds(10)),
+                            TimeOnly.FromDateTime(DateTime.Now.AddSeconds(20))
+                        ],
+                        TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague"));
                     conf.AddSingletonJob<LongRunningService>("Long task").OnceAfter(TimeSpan.FromSeconds(15));
                 });
 

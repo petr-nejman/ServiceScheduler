@@ -1,4 +1,7 @@
-﻿namespace PN.ServiceScheduler.Builders
+﻿using PN.ServiceScheduler.Interfaces;
+using System;
+
+namespace PN.ServiceScheduler.Builders
 {
     public class RegistrationBuilder
     {
@@ -9,6 +12,15 @@
         {
             _schedulerBuilder = schedulerBuilder;
             _jobDefinition = jobDefinition;
+        }
+
+        public void UsingTrigger(ITrigger trigger)
+        {
+            _schedulerBuilder.AddRegistration(new Registration(
+                _jobDefinition.Name,
+                _jobDefinition.JobType,
+                _jobDefinition.IsScoped,
+                trigger));
         }
 
         public void Every(TimeSpan interval)
@@ -29,22 +41,22 @@
                 new Triggers.OnceAfterTrigger(after)));
         }
 
-        public void EveryDayAt(TimeOnly time)
+        public void EveryDayAt(TimeOnly time, TimeZoneInfo timeZone)
         {
             _schedulerBuilder.AddRegistration(new Registration(
                 _jobDefinition.Name,
                 _jobDefinition.JobType,
                 _jobDefinition.IsScoped,
-                new Triggers.EveryDayAtTrigger(Enumerable.Repeat(time, 1))));
+                new Triggers.EveryDayAtTrigger(Enumerable.Repeat(time, 1), timeZone)));
         }
 
-        public void EveryDayAt(IEnumerable<TimeOnly> time)
+        public void EveryDayAt(IEnumerable<TimeOnly> time, TimeZoneInfo timeZone)
         {
             _schedulerBuilder.AddRegistration(new Registration(
                 _jobDefinition.Name,
                 _jobDefinition.JobType,
                 _jobDefinition.IsScoped,
-                new Triggers.EveryDayAtTrigger(time)));
+                new Triggers.EveryDayAtTrigger(time, timeZone)));
         }
     }
 }
