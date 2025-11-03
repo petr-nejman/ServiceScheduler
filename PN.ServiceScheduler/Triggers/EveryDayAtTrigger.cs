@@ -36,6 +36,7 @@ namespace PN.ServiceScheduler.Triggers
             if (_time.Count == 0) return null;
 
             DateTimeOffset now = TimeZoneInfo.ConvertTime(new DateTimeOffset(utcNow, TimeSpan.Zero), _timeZone);
+            DateOnly day = DateOnly.FromDateTime(now.DateTime);
             TimeOnly nowTime =  TimeOnly.FromDateTime(now.DateTime);
             TimeOnly? nextTime = null;
 
@@ -48,14 +49,13 @@ namespace PN.ServiceScheduler.Triggers
                 }
             }
 
-            var next = now.Add(-now.TimeOfDay);
+            if (!nextTime.HasValue)
+            {
+                day = day.AddDays(1);
+                nextTime = _time[0];
+            }
 
-            if (nextTime.HasValue)
-                next = next.Add(nextTime.Value.ToTimeSpan());
-            else
-                next = next.AddDays(1).Add(_time[0].ToTimeSpan());
-            
-            return next.UtcDateTime;
+            return new DateTimeOffset(day, nextTime.Value, _timeZone.GetUtcOffset(new DateTime(day, nextTime.Value))).UtcDateTime;
         }
     }
 }
