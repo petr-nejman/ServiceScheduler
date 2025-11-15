@@ -3,7 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+	<Version>1.0.1</Version>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Service Scheduler</Title>
+    <PackageId>PN.ServiceScheduler</PackageId>
+    <Authors>Petr Nejman</Authors>
+    <RepositoryUrl>https://github.com/petr-nejman/ServiceScheduler</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/petr-nejman/ServiceScheduler</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>scheduling;scheduler;tasks;background;services;job</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
