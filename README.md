@@ -67,8 +67,8 @@ builder.Services.AddServiceScheduler(conf =>
 You can add as many jobs as you want:
 
 ``` csharp
-conf.AddScopedJob<ScopedJob>("Report").EveryHour();
-conf.AddTransientJob<SyncJob>("Synchronization").EveryDayAt(new TimeOnly(3, 0), TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague")); // at 03:00
+conf.AddScopedJob<ScopedJob>("Report").Every(TimeSpan.FromHours(1));  //every hour
+conf.AddTransientJob<SyncJob>("Synchronization").EveryDayAt(new TimeOnly(3, 0), TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague")); // every day at 03:00
 ```
 
 ------------------------------------------------------------------------
