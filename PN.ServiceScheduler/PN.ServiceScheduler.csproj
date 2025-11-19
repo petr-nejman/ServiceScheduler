@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-	<Version>1.0.1</Version>
+	<Version>1.1.0</Version>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>Service Scheduler</Title>
@@ -12,7 +12,8 @@
     <RepositoryUrl>https://github.com/petr-nejman/ServiceScheduler</RepositoryUrl>
     <PackageProjectUrl>https://github.com/petr-nejman/ServiceScheduler</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>scheduling;scheduler;tasks;background;services;job</PackageTags>
+    <PackageTags>scheduling;scheduler;task;tasks;background;service;services;job;jobs</PackageTags>
+	<Description>Service Scheduler is a lightweight and easy-to-use .NET library for scheduling and managing background tasks in your applications.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -76,7 +76,7 @@ namespace PN.ServiceScheduler
             DateTime now = DateTime.UtcNow;
             foreach (var registration in _registrations)
             {
-                if (registration.Trigger.ShouldRun(now))
+                if (ShouldRun(registration, now))
                 {
                     if (registration.RunningTask == null || registration.RunningTask.IsCompleted)
                     {
@@ -88,6 +88,11 @@ namespace PN.ServiceScheduler
                     }
                 }
             }
+        }
+
+        private bool ShouldRun(Registration registration, DateTime utcNow)
+        {
+            return registration.Trigger.GetNextRunUtc() <= utcNow;
         }
 
         private async Task ExecuteJob(Registration registration, CancellationToken stoppingToken)

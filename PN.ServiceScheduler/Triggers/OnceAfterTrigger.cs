@@ -19,10 +19,5 @@ namespace PN.ServiceScheduler.Triggers
         {
             _nextRun = null;
         }
-
-        public bool ShouldRun(DateTime nowUtc)
-        {
-            return nowUtc >= _nextRun;
-        }
     }
 }

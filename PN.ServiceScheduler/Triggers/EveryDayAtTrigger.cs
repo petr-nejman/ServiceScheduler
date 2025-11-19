@@ -26,11 +26,6 @@ namespace PN.ServiceScheduler.Triggers
             _nextRun = GetNext(lastRunUtc);
         }
 
-        public bool ShouldRun(DateTime nowUtc)
-        {
-            return nowUtc >= _nextRun;
-        }
-
         private DateTime? GetNext(DateTime utcNow)
         {
             if (_time.Count == 0) return null;

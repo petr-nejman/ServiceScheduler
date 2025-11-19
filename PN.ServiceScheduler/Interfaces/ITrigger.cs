@@ -16,12 +16,5 @@
         /// </summary>
         /// <param name="lastRunUtc">The last run time in UTC.</param>
         void SetLastRunUtc(DateTime lastRunUtc);
-
-        /// <summary>
-        /// Determines whether the job should run at the specified UTC time.
-        /// </summary>
-        /// <param name="nowUtc">The current time in UTC.</param>
-        /// <returns>True if the job should run; otherwise, false.</returns>
-        bool ShouldRun(DateTime nowUtc);
     }
 }

@@ -4,7 +4,7 @@ A lightweight, dependency-injection--friendly background job scheduler
 for .NET applications.
 
 This library allows you to register background jobs ("services") that
-run on custom schedules. The schedule definition (a **trigger**) is
+run on custom schedules. The schedule definition (a "trigger") is
 separated from the job implementation itself, keeping your code clean,
 testable, and flexible.
 
@@ -90,7 +90,6 @@ public interface ITrigger
 {
     DateTime? GetNextRunUtc();
     void SetLastRunUtc(DateTime lastRunUtc);
-    bool ShouldRun(DateTime nowUtc);
 }
 ```
 

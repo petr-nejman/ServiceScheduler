@@ -22,10 +22,5 @@ namespace PN.ServiceScheduler.Triggers
         {
             _nextRun = lastRunUtc.Add(_interval);
         }
-
-        public bool ShouldRun(DateTime nowUtc)
-        {
-            return nowUtc >= _nextRun;
-        }
     }
 }
