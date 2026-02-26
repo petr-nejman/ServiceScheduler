@@ -8,12 +8,14 @@ namespace PN.ServiceScheduler
         private readonly IServiceProvider _serviceProvider;
         private readonly IReadOnlyList<Registration> _registrations;
         private readonly ILogger<Scheduler> _logger;
+        private readonly TimeProvider _timeProvider;
 
-        public Scheduler(IServiceProvider serviceProvider, IReadOnlyList<Registration> jobRegistrations, ILogger<Scheduler> logger)
+        public Scheduler(IServiceProvider serviceProvider, IReadOnlyList<Registration> jobRegistrations, ILogger<Scheduler> logger, TimeProvider? timeProvider = null)
         {
             _serviceProvider = serviceProvider;
             _registrations = jobRegistrations;
             _logger = logger;
+            _timeProvider = timeProvider ?? TimeProvider.System;
         }
 
         #region BackgroundService
@@ -29,13 +31,13 @@ namespace PN.ServiceScheduler
                     DateTime? nextRun = GetNextRunUtc();
                     if (nextRun.HasValue)
                     {
-                        int delay = Math.Max(0, (int)(nextRun.Value - DateTime.UtcNow).TotalMilliseconds);
+                        int delay = Math.Max(0, (int)(nextRun.Value - _timeProvider.GetUtcNow().DateTime).TotalMilliseconds);
                         if (delay > 0)
                             await Task.Delay(delay, stoppingToken);
                     }
                     else
                     {
-                        //Všechny triggery jsou už u konce
+                        //All done
                         break;
                     }
 
@@ -73,7 +75,7 @@ namespace PN.ServiceScheduler
 
         private async Task CheckJobs(CancellationToken stoppingToken)
         {
-            DateTime now = DateTime.UtcNow;
+            DateTime now = _timeProvider.GetUtcNow().DateTime;
             foreach (var registration in _registrations)
             {
                 if (ShouldRun(registration, now))
@@ -128,13 +130,13 @@ namespace PN.ServiceScheduler
             }
             finally
             {
-                registration.Trigger.SetLastRunUtc(DateTime.UtcNow);
+                registration.Trigger.SetLastRunUtc(_timeProvider.GetUtcNow().DateTime);
             }
         }
 
         private void SkipJob(Registration registration)
         {
-            registration.Trigger.SetLastRunUtc(DateTime.UtcNow);
+            registration.Trigger.SetLastRunUtc(_timeProvider.GetUtcNow().DateTime);
             _logger.LogDebug("{Name} - Skipped", registration.Name);
         }
     }

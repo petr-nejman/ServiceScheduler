@@ -6,30 +6,32 @@ namespace PN.ServiceScheduler.Builders
     public class SchedulerBuilder
     {
         private readonly IServiceCollection _serviceCollection;
+        private readonly TimeProvider _timeProvider;
         private List<Registration> _registrations;
 
-        public SchedulerBuilder(IServiceCollection serviceCollection)
+        public SchedulerBuilder(IServiceCollection serviceCollection, TimeProvider? timeProvider = null)
         {
             _serviceCollection = serviceCollection;
+            _timeProvider = timeProvider ?? TimeProvider.System;
             _registrations = new List<Registration>();
         }
 
         public RegistrationBuilder AddSingletonJob<TJob>(string name) where TJob : class, Interfaces.IJob
         {
             _serviceCollection.TryAddSingleton<TJob>();
-            return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), false));
+            return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), false), _timeProvider);
         }
 
         public RegistrationBuilder AddScopedJob<TJob>(string name) where TJob : class, Interfaces.IJob
         {
             _serviceCollection.TryAddScoped<TJob>();
-            return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), true));
+            return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), true), _timeProvider);
         }
 
         public RegistrationBuilder AddTransientJob<TJob>(string name) where TJob : class, Interfaces.IJob
         {
             _serviceCollection.TryAddTransient<TJob>();
-            return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), false));
+            return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), false), _timeProvider);
         }
 
         internal void AddRegistration(Registration registration)

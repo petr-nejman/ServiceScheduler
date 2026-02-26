@@ -4,13 +4,14 @@ namespace PN.ServiceScheduler.Triggers
 {
     public class IntervalTrigger : ITrigger
     {
-        private DateTime _nextRun = DateTime.UtcNow;
+        private DateTime _nextRun;
 
         private readonly TimeSpan _interval;
 
-        public IntervalTrigger(TimeSpan interval)
+        public IntervalTrigger(TimeSpan interval, TimeProvider? timeProvider = null)
         {
             _interval = interval;
+            _nextRun = (timeProvider ?? TimeProvider.System).GetUtcNow().DateTime;
         }
 
         public DateTime? GetNextRunUtc()

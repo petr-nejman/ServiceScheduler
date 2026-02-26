@@ -6,9 +6,9 @@ namespace PN.ServiceScheduler.Triggers
     {
         private DateTime? _nextRun = null;
 
-        public OnceAfterTrigger(TimeSpan after)
+        public OnceAfterTrigger(TimeSpan after, TimeProvider timeProvider = null)
         {
-            _nextRun = DateTime.UtcNow.Add(after);
+            _nextRun = (timeProvider ?? TimeProvider.System).GetUtcNow().DateTime.Add(after);
         }
         public DateTime? GetNextRunUtc()
         {

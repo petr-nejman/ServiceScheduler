@@ -7,11 +7,13 @@ namespace PN.ServiceScheduler.Builders
     {
         private readonly SchedulerBuilder _schedulerBuilder;
         private readonly JobDefinition _jobDefinition;
+        private readonly TimeProvider _timeProvider;
 
-        public RegistrationBuilder(SchedulerBuilder schedulerBuilder, JobDefinition jobDefinition)
+        public RegistrationBuilder(SchedulerBuilder schedulerBuilder, JobDefinition jobDefinition, TimeProvider? timeProvider = null)
         {
             _schedulerBuilder = schedulerBuilder;
             _jobDefinition = jobDefinition;
+            _timeProvider = timeProvider ?? TimeProvider.System;
         }
 
         public void UsingTrigger(ITrigger trigger)
@@ -29,7 +31,7 @@ namespace PN.ServiceScheduler.Builders
                 _jobDefinition.Name,
                 _jobDefinition.JobType,
                 _jobDefinition.IsScoped,
-                new Triggers.IntervalTrigger(interval)));
+                new Triggers.IntervalTrigger(interval, _timeProvider)));
         }
 
         public void OnceAfter(TimeSpan after)
@@ -38,7 +40,7 @@ namespace PN.ServiceScheduler.Builders
                 _jobDefinition.Name,
                 _jobDefinition.JobType,
                 _jobDefinition.IsScoped,
-                new Triggers.OnceAfterTrigger(after)));
+                new Triggers.OnceAfterTrigger(after, _timeProvider)));
         }
 
         public void EveryDayAt(TimeOnly time, TimeZoneInfo timeZone)
@@ -47,7 +49,7 @@ namespace PN.ServiceScheduler.Builders
                 _jobDefinition.Name,
                 _jobDefinition.JobType,
                 _jobDefinition.IsScoped,
-                new Triggers.EveryDayAtTrigger(Enumerable.Repeat(time, 1), timeZone)));
+                new Triggers.EveryDayAtTrigger(Enumerable.Repeat(time, 1), timeZone, _timeProvider)));
         }
 
         public void EveryDayAt(IEnumerable<TimeOnly> time, TimeZoneInfo timeZone)
@@ -56,7 +58,7 @@ namespace PN.ServiceScheduler.Builders
                 _jobDefinition.Name,
                 _jobDefinition.JobType,
                 _jobDefinition.IsScoped,
-                new Triggers.EveryDayAtTrigger(time, timeZone)));
+                new Triggers.EveryDayAtTrigger(time, timeZone, _timeProvider)));
         }
     }
 }

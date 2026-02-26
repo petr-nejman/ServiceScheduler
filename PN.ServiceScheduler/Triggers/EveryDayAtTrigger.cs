@@ -9,11 +9,11 @@ namespace PN.ServiceScheduler.Triggers
         private readonly IReadOnlyList<TimeOnly> _time;
         private readonly TimeZoneInfo _timeZone;
 
-        public EveryDayAtTrigger(IEnumerable<TimeOnly> time, TimeZoneInfo timeZone)
+        public EveryDayAtTrigger(IEnumerable<TimeOnly> time, TimeZoneInfo timeZone, TimeProvider? timeProvider = null)
         {
             _time = time.OrderBy(t => t).Distinct().ToList();
             _timeZone = timeZone;
-            _nextRun = GetNext(DateTime.UtcNow);
+            _nextRun = GetNext((timeProvider ?? TimeProvider.System).GetUtcNow().DateTime);
         }
 
         public DateTime? GetNextRunUtc()
