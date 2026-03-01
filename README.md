@@ -49,8 +49,37 @@ The package exposes an extension method `AddServiceScheduler` for
 - Adds the `Scheduler` as a hosted service so it runs with the
   application lifetime.
 
-This means you normally only need to call `AddServiceScheduler` and
-configure your jobs through the provided builder API.
+By default the scheduler builder will also attempt to register the job
+implementation types you add (via `AddSingletonJob<T>`,
+`AddScopedJob<T>`, `AddTransientJob<T>`) into the same `IServiceCollection`.
+This is convenient for the common case where the default `IJobFactory`
+resolves jobs from the application's DI container.
+
+However, if you provide a custom `IJobFactory` that resolves job
+instances from an external or separate container, automatic job type
+registration into the default `IServiceCollection` can be undesirable
+or incorrect. To support this scenario the `SchedulerBuilder` exposes
+`UseExternalJobFactory()` which disables auto-registration of job types.
+When external job factory mode is enabled the builder will still record
+the job registrations for the scheduler, but it will not add the
+implementation types to the `IServiceCollection`.
+
+Example: using an external job factory
+
+```csharp
+builder.Services.AddServiceScheduler(conf =>
+{
+    // Tell the builder that job instances will come from a custom factory
+    conf.UseExternalJobFactory();
+
+    // Job registrations are recorded for scheduling, but TJob won't be
+    // automatically registered in the default IServiceCollection.
+    conf.AddSingletonJob<MyJob>("my-job").Every(TimeSpan.FromSeconds(10));
+});
+
+// Register your custom factory (must implement IJobFactory)
+services.TryAddSingleton<IJobFactory, MyExternalJobFactory>();
+```
 
 ------------------------------------------------------------------------
 

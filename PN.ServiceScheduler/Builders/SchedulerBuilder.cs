@@ -8,6 +8,7 @@ namespace PN.ServiceScheduler.Builders
         private readonly IServiceCollection _serviceCollection;
         private readonly TimeProvider _timeProvider;
         private List<Registration> _registrations;
+        private bool _autoRegisterJobs = true;
 
         public SchedulerBuilder(IServiceCollection serviceCollection, TimeProvider? timeProvider = null)
         {
@@ -17,50 +18,55 @@ namespace PN.ServiceScheduler.Builders
         }
 
         /// <summary>
+        /// Use when job instances will be provided by an external <see cref="IJobFactory"/>.
+        /// When set, the builder will NOT register job implementation types into the provided
+        /// <see cref="IServiceCollection"/>.
+        /// </summary>
+        public SchedulerBuilder UseExternalJobFactory()
+        {
+            _autoRegisterJobs = false;
+            return this;
+        }
+
+        /// <summary>
         /// Registers the job implementation <typeparamref name="TJob"/> as a singleton in the provided
         /// <see cref="IServiceCollection"/> and begins a registration flow for scheduling.
+        /// If external job factory mode is enabled, the type will NOT be registered.
         /// </summary>
-        /// <typeparam name="TJob">The job implementation type. Must implement <see cref="Interfaces.IJob"/>.</typeparam>
-        /// <param name="name">A unique logical name for the job used by the scheduler to identify the registration.</param>
-        /// <returns>
-        /// A <see cref="RegistrationBuilder"/> that can be used to configure triggers, scheduling details and
-        /// finalize the job registration.
-        /// </returns>
         public RegistrationBuilder AddSingletonJob<TJob>(string name) where TJob : class, Interfaces.IJob
         {
-            _serviceCollection.TryAddSingleton<TJob>();
+            if (_autoRegisterJobs)
+            {
+                _serviceCollection.TryAddSingleton<TJob>();
+            }
             return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), false), _timeProvider);
         }
 
         /// <summary>
         /// Registers the job implementation <typeparamref name="TJob"/> with a scoped lifetime in the provided
         /// <see cref="IServiceCollection"/> and begins a registration flow for scheduling.
+        /// If external job factory mode is enabled, the type will NOT be registered.
         /// </summary>
-        /// <typeparam name="TJob">The job implementation type. Must implement <see cref="Interfaces.IJob"/>.</typeparam>
-        /// <param name="name">A unique logical name for the job used by the scheduler to identify the registration.</param>
-        /// <returns>
-        /// A <see cref="RegistrationBuilder"/> that can be used to configure triggers, scheduling details and
-        /// finalize the job registration.
-        /// </returns>
         public RegistrationBuilder AddScopedJob<TJob>(string name) where TJob : class, Interfaces.IJob
         {
-            _serviceCollection.TryAddScoped<TJob>();
+            if (_autoRegisterJobs)
+            {
+                _serviceCollection.TryAddScoped<TJob>();
+            }
             return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), true), _timeProvider);
         }
 
         /// <summary>
         /// Registers the job implementation <typeparamref name="TJob"/> with a transient lifetime in the provided
         /// <see cref="IServiceCollection"/> and begins a registration flow for scheduling.
+        /// If external job factory mode is enabled, the type will NOT be registered.
         /// </summary>
-        /// <typeparam name="TJob">The job implementation type. Must implement <see cref="Interfaces.IJob"/>.</typeparam>
-        /// <param name="name">A unique logical name for the job used by the scheduler to identify the registration.</param>
-        /// <returns>
-        /// A <see cref="RegistrationBuilder"/> that can be used to configure triggers, scheduling details and
-        /// finalize the job registration.
-        /// </returns>
         public RegistrationBuilder AddTransientJob<TJob>(string name) where TJob : class, Interfaces.IJob
         {
-            _serviceCollection.TryAddTransient<TJob>();
+            if (_autoRegisterJobs)
+            {
+                _serviceCollection.TryAddTransient<TJob>();
+            }
             return new RegistrationBuilder(this, new JobDefinition(name, typeof(TJob), false), _timeProvider);
         }
 
