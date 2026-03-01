@@ -1,18 +1,19 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PN.ServiceScheduler.Factories;
 
 namespace PN.ServiceScheduler
 {
     public class Scheduler : BackgroundService
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IJobFactory _jobFactory;
         private readonly IReadOnlyList<Registration> _registrations;
         private readonly ILogger<Scheduler> _logger;
         private readonly TimeProvider _timeProvider;
 
-        public Scheduler(IServiceProvider serviceProvider, IReadOnlyList<Registration> jobRegistrations, ILogger<Scheduler> logger, TimeProvider? timeProvider = null)
+        public Scheduler(IJobFactory jobFactory, IReadOnlyList<Registration> jobRegistrations, ILogger<Scheduler> logger, TimeProvider? timeProvider = null)
         {
-            _serviceProvider = serviceProvider;
+            _jobFactory = jobFactory ?? throw new ArgumentNullException(nameof(jobFactory));
             _registrations = jobRegistrations;
             _logger = logger;
             _timeProvider = timeProvider ?? TimeProvider.System;
@@ -99,11 +100,15 @@ namespace PN.ServiceScheduler
 
         private async Task ExecuteJob(Registration registration, CancellationToken stoppingToken)
         {
+            JobInstance? jobInstance = null;
+
             try
             {
-                var job = await registration.GetRegisteredService(_serviceProvider);
+                jobInstance = await _jobFactory.CreateAsync(registration, stoppingToken);
 
-                registration.RunningTask = Task.Run(function: async () =>
+                var job = jobInstance.Job;
+
+                registration.RunningTask = Task.Run(async () =>
                 {
                     try
                     {
@@ -121,12 +126,29 @@ namespace PN.ServiceScheduler
                     finally
                     {
                         _logger.LogDebug("{Name} - Finished", registration.Name);
+
+                        if (jobInstance != null)
+                        {
+                            try
+                            {
+                                await jobInstance.DisposeAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "{Name} - Failed to dispose job scope", registration.Name);
+                            }
+                        }
                     }
                 }, stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{Name} - Failed", registration.Name);
+
+                if (jobInstance != null)
+                {
+                    try { await jobInstance.DisposeAsync(); } catch { /* ignore */ }
+                }
             }
             finally
             {

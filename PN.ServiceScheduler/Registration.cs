@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using PN.ServiceScheduler.Interfaces;
+﻿using PN.ServiceScheduler.Interfaces;
 
 namespace PN.ServiceScheduler
 {
@@ -14,6 +13,10 @@ namespace PN.ServiceScheduler
 
         public ITrigger Trigger => _trigger;
 
+        public Type JobType => _jobType;
+
+        public bool IsScoped => _isScoped;
+
         internal Task? RunningTask { get; set; }
 
         public Registration(string name, Type jobType, bool isScoped, ITrigger trigger)
@@ -22,19 +25,6 @@ namespace PN.ServiceScheduler
             _jobType = jobType;
             _isScoped = isScoped;
             _trigger = trigger;
-        }
-
-        public async Task<IJob> GetRegisteredService(IServiceProvider serviceProvider)
-        {
-            if (_isScoped)
-            {
-                await using var scope = serviceProvider.CreateAsyncScope();
-                return (IJob)scope.ServiceProvider.GetRequiredService(_jobType);
-            }
-            else
-            {
-                return (IJob)serviceProvider.GetRequiredService(_jobType);
-            }
         }
     }
 }

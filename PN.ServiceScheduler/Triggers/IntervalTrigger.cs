@@ -10,6 +10,9 @@ namespace PN.ServiceScheduler.Triggers
 
         public IntervalTrigger(TimeSpan interval, TimeProvider? timeProvider = null)
         {
+            if (interval <= TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(interval), "Interval must be a positive TimeSpan.");
+
             _interval = interval;
             _nextRun = (timeProvider ?? TimeProvider.System).GetUtcNow().DateTime;
         }
