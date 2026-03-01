@@ -37,6 +37,21 @@ Each job has exactly one method: `ExecuteAsync`.
 You then register the job and its trigger inside `Program.cs` using the
 scheduler builder.
 
+Registration details
+
+The package exposes an extension method `AddServiceScheduler` for
+`IServiceCollection` that wires everything up for you:
+
+- Builds the configured registrations and registers them as a singleton
+  `IReadOnlyList<Registration>` in the DI container.
+- Registers a default `IJobFactory` (`DefaultJobFactory`) if no other
+  `IJobFactory` is registered.
+- Adds the `Scheduler` as a hosted service so it runs with the
+  application lifetime.
+
+This means you normally only need to call `AddServiceScheduler` and
+configure your jobs through the provided builder API.
+
 ------------------------------------------------------------------------
 
 ## 📌 Example: Creating a Job
@@ -71,6 +86,15 @@ conf.AddScopedJob<ScopedJob>("Report").Every(TimeSpan.FromHours(1));  //every ho
 conf.AddTransientJob<SyncJob>("Synchronization").EveryDayAt(new TimeOnly(3, 0), TimeZoneInfo.FindSystemTimeZoneById("Europe/Prague")); // every day at 03:00
 ```
 
+Job lifetimes and disposal
+
+- `AddSingletonJob<T>` registers `T` as a singleton in the DI container.
+- `AddScopedJob<T>` registers `T` with a scoped lifetime. The default
+  `DefaultJobFactory` creates an async scope for scoped jobs and disposes
+  it after the job finishes.
+- `AddTransientJob<T>` registers `T` as transient and resolves it from
+  the root provider when executed.
+
 ------------------------------------------------------------------------
 
 ## ⏱ Built-in Triggers
@@ -101,3 +125,11 @@ public interface ITrigger
 -   No overlapping runs (if a job is still running when the next trigger
     occurs, the run is skipped)
 -   Cancellation is respected through `CancellationToken`
+
+Additional notes
+
+- The scheduler picks the next run time from all registered triggers and
+  waits until that time. If no next run times remain the scheduler stops.
+- The library uses `TimeProvider` internally (and exposes time-provider
+  aware triggers) which makes it easier to unit-test scheduling logic by
+  providing a custom `TimeProvider`.
