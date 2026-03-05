@@ -95,7 +95,8 @@ namespace PN.ServiceScheduler
 
         private bool ShouldRun(Registration registration, DateTime utcNow)
         {
-            return registration.Trigger.GetNextRunUtc() <= utcNow;
+            var next = registration.Trigger.GetNextRunUtc();
+            return next.HasValue && next.Value <= utcNow;
         }
 
         private async Task ExecuteJob(Registration registration, CancellationToken stoppingToken)
